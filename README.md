@@ -3,6 +3,7 @@
 Clojure scheduler library with fixed-rate and cron-based task scheduling, built on [CronScheduler](https://github.com/TimeAndSpaceIO/CronScheduler) and [cron-utils](https://github.com/jmrozanec/cron-utils).
 
 > *Oh, on and on and on and on*
+>
 > *My cypher keeps moving like a rolling stone*
 > - Erykah Badu
 
@@ -30,6 +31,25 @@ TODO
 
 ## Usage
 
+### Supported task configuration
+
+Regardless of how you use the scheduler, tasks can be defined using two schedule definitions:
+
+Using milliseconds:
+
+- `period-ms` - self explanatory,
+- `delay-ms` - optional, delays initial execution of the task
+
+
+Using CRON expressions.
+
+> [!NOTE]
+> Schedules support 'seconds' field, unlike UNIX CRON schedules
+
+
+- `schedule` - a CRON string, with seconds field
+
+## Examples
 
 ### Fixed-rate scheduling (Component)
 
