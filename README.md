@@ -27,7 +27,15 @@ Use this if:
 
 - Clojars
 
-TODO
+[![Clojars Project](https://img.shields.io/clojars/v/org.clojars.lukaszkorecki/on-and-on.svg)](https://clojars.org/org.clojars.lukaszkorecki/on-and-on)
+
+```
+;; deps.edn
+org.clojars.lukaszkorecki/on-and-on {:mvn/version "0.1.0.3"}
+
+;; lein
+[org.clojars.lukaszkorecki/on-and-on "0.1.0.3"]
+```
 
 ## Usage
 
