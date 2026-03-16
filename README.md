@@ -57,6 +57,15 @@ Using CRON expressions.
 
 - `schedule` - a CRON string, with seconds field
 
+ 
+> [!WARNING]
+> To keep everyone sane, all schedules are **always** based on UTC
+> Currently, there are no plans to allow arbitrary timezones because that opens a
+> whole can of worms of debuggability and you having the burden of making sure tzdata
+> used by the JVM is up to date.
+> You should do it anyway but prefer to ignore timezones in your recurring tasks.
+
+
 ## Examples
 
 ### Fixed-rate scheduling (Component)
