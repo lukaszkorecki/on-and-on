@@ -9,7 +9,6 @@
       (is (scheduler/scheduler-pool? pool))
       (scheduler/shutdown-scheduler-pool pool))))
 
-
 (deftest schedule-task-rejects-mode-test
   (testing "passing :mode throws because only fixed-rate is supported"
     (let [pool (scheduler/make-scheduler-pool {:name "mode-test"})]
