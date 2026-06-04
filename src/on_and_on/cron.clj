@@ -28,6 +28,28 @@
   ^Cron [^String expr]
   (CronParser/.parse parser expr))
 
+(defn valid-schedule?
+  "Returns true if `expr` parses as a Quartz cron expression. Catches the
+  cron-utils IllegalArgumentException so callers can validate without try/catch."
+  [expr]
+  (and (string? expr)
+       (try
+         (parse expr)
+         true
+         (catch IllegalArgumentException _ false))))
+
+(defn validate-schedule! [{:keys [name schedule]}]
+  (try
+    ;; NOTE: we're not using `valid-schedule?` because we want to
+    ;; propagate original exception
+    (parse schedule)
+    (catch IllegalArgumentException e
+      (throw
+       (ex-info "Invalid cron schedule. Quartz-flavored cron expressions require 6 or 7 fields (sec min hour day-of-month month day-of-week [year])"
+                {:schedule schedule
+                 :name name}
+                e)))))
+
 (defn explain
   "Returns a human-readable description of a parsed cron expression."
   ^String [^Cron parsed]
