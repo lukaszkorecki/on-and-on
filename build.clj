@@ -4,7 +4,11 @@
 
 (def lib 'org.clojars.lukaszkorecki/on-and-on)
 (def version-stable (format "0.1.0.%s" (b/git-count-revs nil)))
-(defn version-snapshot [suffix] (format "%s-SNAPSHOT-%s" version-stable suffix))
+
+(defn version [snapshot]
+  (if snapshot
+    (str version-stable "-SNAPSHOT")
+    version-stable))
 
 (def class-dir "target/classes")
 (defn jar-file [version] (format "target/%s-%s.jar" (name lib) version))
@@ -43,9 +47,7 @@
 
 (defn jar
   [{:keys [snapshot] :as _args}]
-  (let [{:keys [jar-file] :as opts} (jar-opts {:version (if snapshot
-                                                          (version-snapshot snapshot)
-                                                          version-stable)})]
+  (let [{:keys [jar-file] :as opts} (jar-opts {:version (version snapshot)})]
     (println (format "Cleaning '%s'..." target))
     (b/delete {:path "target"})
     (println "Writing 'pom.xml'...")
@@ -58,18 +60,14 @@
 
 (defn install
   [{:keys [snapshot]}]
-  (let [{:keys [jar-file] :as opts} (jar-opts {:version (if snapshot
-                                                          (version-snapshot snapshot)
-                                                          version-stable)})]
+  (let [{:keys [jar-file] :as opts} (jar-opts {:version (version snapshot)})]
     (dd/deploy {:installer :local
                 :artifact (b/resolve-path jar-file)
                 :pom-file (b/pom-path (select-keys opts [:lib :class-dir]))})))
 
 (defn publish
   [{:keys [snapshot]}]
-  (let [{:keys [jar-file] :as opts} (jar-opts {:version (if snapshot
-                                                          (version-snapshot snapshot)
-                                                          version-stable)})]
+  (let [{:keys [jar-file] :as opts} (jar-opts {:version (version snapshot)})]
     (dd/deploy {:installer :remote
                 :artifact (b/resolve-path jar-file)
                 :pom-file (b/pom-path (select-keys opts [:lib :class-dir]))})))
