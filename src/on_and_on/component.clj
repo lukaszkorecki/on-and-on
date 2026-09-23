@@ -3,7 +3,9 @@
   (:require
    [clojure.tools.logging :as log]
    [com.stuartsierra.component :as component] ;; noqa - needed for metadata protocol extension
-   [on-and-on.scheduler :as scheduler]))
+   [on-and-on.scheduler :as scheduler])
+  (:import
+   (java.util.concurrent Future)))
 
 (set! *warn-on-reflection* true)
 
@@ -17,13 +19,13 @@
     (if (:executor this)
       this
       (do
-        (log/infof "Creating scheduler pool %s" name)
-        (assoc this :executor (scheduler/make-scheduler-pool opts)))))
+        (log/infof "Creating scheduler pool %s" (:name this))
+        (assoc this :executor (scheduler/make-scheduler-pool {:name (:name this)})))))
 
   (stop [this]
     (if (:executor this)
       (do
-        (log/warnf "stopping %s scheduler pool" name)
+        (log/warnf "stopping %s scheduler pool" (:name this))
         (scheduler/shutdown-scheduler-pool (:executor this))
         (assoc this :executor nil))
       this)))
@@ -43,7 +45,7 @@
   (start [this]
     (if (:task this)
       this
-      (do
+      (let [name (:name this)]
         (log/infof "Creating scheduled task %s" name)
         (assert (scheduler/scheduler-pool? (:executor (:scheduler this)))
                 "Scheduled task requires a :scheduler dependency")
@@ -68,9 +70,10 @@
                                                     :delay-ms delay-ms}))))))))
 
   (stop [this]
-    (if (:task this)
+    (if-let [task (:task this)]
       (do
         (log/warnf "stopping task %s" (:name this))
+        (Future/.cancel ^Future task false)
         (assoc this :task nil))
       this)))
 

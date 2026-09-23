@@ -1,8 +1,8 @@
 (ns on-and-on.cron-test
   (:require
-   [on-and-on.time :as time]
+   [clojure.test :refer [deftest testing is]]
    [on-and-on.cron :as cron]
-   [clojure.test :refer [deftest testing is]]))
+   [on-and-on.time :as time]))
 
 (deftest parsing-and-extracting-data
   (testing "parses an expression and calculates next execution values"
