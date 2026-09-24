@@ -50,6 +50,18 @@
       (is (not (cron/matches-schedule? (time/str->instant "2021-02-03T00:05:03Z") schedule)))
       (is (not (cron/matches-schedule? (time/str->instant "2021-02-03T00:03:00Z") schedule))))))
 
+(deftest valid-schedule?-test
+  (testing "accepts 6- and 7-field Quartz expressions"
+    (is (cron/valid-schedule? "0 /5 * * * ?"))
+    (is (cron/valid-schedule? "/2 * * * * ? *")))
+  (testing "rejects malformed expressions without throwing"
+    (is (not (cron/valid-schedule? "0 0,15,30,45 * * ?"))) ;; 5 fields
+    (is (not (cron/valid-schedule? "")))
+    (is (not (cron/valid-schedule? "not a cron expression"))))
+  (testing "rejects non-strings"
+    (is (not (cron/valid-schedule? nil)))
+    (is (not (cron/valid-schedule? 60)))))
+
 (deftest bugs
   (testing "short schedules get interval of 1"
     (testing "every 3s starting at 0th second"

@@ -3,6 +3,7 @@
   (:require
    [clojure.tools.logging :as log]
    [com.stuartsierra.component :as component] ;; noqa - needed for metadata protocol extension
+   [on-and-on.cron :as cron]
    [on-and-on.scheduler :as scheduler]))
 
 (set! *warn-on-reflection* true)
@@ -86,13 +87,18 @@
   - `:handler` — function called each tick, receives the component map (required)
   - `:period-ms` — interval in ms for fixed-rate scheduling
   - `:schedule` — cron expression for cron-based scheduling
-  - `:delay-ms` — initial delay in ms (only when `period-ms` is provided, ignored when cron `schedule` is used, default 0)"
+  - `:delay-ms` — initial delay in ms (only when `period-ms` is provided, ignored when cron `schedule` is used, default 0)
+
+  When `:schedule` is provided, the cron expression is parsed eagerly so a
+  malformed string fails at definition time rather than at component start."
   [{:keys [name period-ms schedule delay-ms handler]
     :or {delay-ms 0}}]
   {:pre [(not-empty name)
          (fn? handler)
          (or (nat-int? period-ms) (string? schedule))
          (not (and period-ms schedule))]}
+  (when schedule
+    (cron/validate-schedule! {:name name :schedule schedule}))
   (map->ScheduledTask {:name name
                        :handler handler
                        :period-ms period-ms
