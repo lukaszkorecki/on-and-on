@@ -96,3 +96,36 @@
         (is (>= @counter 2) "cron task should have fired at least twice in 3.5s")
         (finally
           (component/stop started))))))
+
+(deftest stop-cancels-task-test
+  (testing "stopping a task cancels it while the pool keeps running"
+    (let [counter (atom 0)
+          pool (component/start (comp/create-pool {:name "StopTest"}))
+          task (component/start (assoc (comp/create-task {:name "stop-task"
+                                                          :period-ms 10
+                                                          :handler (fn [_] (swap! counter inc))})
+                                       :scheduler pool))]
+      (try
+        (Thread/sleep 100)
+        (component/stop task)
+        (let [seen @counter]
+          (Thread/sleep 100)
+          (is (pos? seen))
+          (is (<= @counter (inc seen)) "task should not fire after stop"))
+        (finally
+          (component/stop pool))))))
+
+(deftest pool-thread-name-test
+  (testing "pool threads are named after the pool"
+    (let [thread-name (promise)
+          pool (component/start (comp/create-pool {:name "NameTest"}))
+          task (component/start (assoc (comp/create-task {:name "name-task"
+                                                          :period-ms 10
+                                                          :handler (fn [_]
+                                                                     (deliver thread-name (.getName (Thread/currentThread))))})
+                                       :scheduler pool))]
+      (try
+        (is (re-find #"^NameTest-scheduler-" (deref thread-name 1000 "timeout")))
+        (finally
+          (component/stop task)
+          (component/stop pool))))))
