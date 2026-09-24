@@ -64,6 +64,21 @@
         (finally
           (component/stop started))))))
 
+(deftest create-task-eager-cron-validation-test
+  (testing "create-task throws on a malformed cron schedule"
+    (let [ex (is (thrown? clojure.lang.ExceptionInfo
+                          (comp/create-task {:name "bad-task"
+                                             :schedule "0 0,15,30,45 * * ?" ;; 5 fields, needs 6
+                                             :handler (fn [_])})))]
+      (when (instance? clojure.lang.ExceptionInfo ex)
+        (let [data (ex-data ex)]
+          (is (= "bad-task" (:name data)))
+          (is (= "0 0,15,30,45 * * ?" (:schedule data)))))))
+  (testing "create-task accepts a well-formed cron schedule"
+    (is (comp/create-task {:name "good-task"
+                           :schedule "0 0,15,30,45 * * * ?"
+                           :handler (fn [_])}))))
+
 (deftest cron-task-component-test
   (testing "cron-based task component works"
     (let [counter (atom 0)
